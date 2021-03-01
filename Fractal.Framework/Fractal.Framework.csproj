@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B22D2E2C-CBBA-4446-90CA-C907132524E3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Fractal.Framework</RootNamespace>
+    <AssemblyName>Fractal.Framework</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Extensions\ChildrenSetting.cs">
+      <Link>Extensions\ChildrenSetting.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\ChildSetting.cs">
+      <Link>Extensions\ChildSetting.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\FeatureSetting.cs">
+      <Link>Extensions\FeatureSetting.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\PathTools.cs">
+      <Link>Extensions\PathTools.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\Searchers.cs">
+      <Link>Extensions\Searchers.cs</Link>
+    </Compile>
+    <Compile Include="..\Extensions\Serializer.cs">
+      <Link>Extensions\Serializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Node\INode.cs">
+      <Link>Node\INode.cs</Link>
+    </Compile>
+    <Compile Include="..\Node\Node.cs">
+      <Link>Node\Node.cs</Link>
+    </Compile>
+    <Compile Include="..\Repository\Delegates.cs">
+      <Link>Repository\Delegates.cs</Link>
+    </Compile>
+    <Compile Include="..\Repository\Enums.cs">
+      <Link>Repository\Enums.cs</Link>
+    </Compile>
+    <Compile Include="..\Repository\Tools.cs">
+      <Link>Repository\Tools.cs</Link>
+    </Compile>
+    <Compile Include="..\Slave\ISlave.cs">
+      <Link>Slave\ISlave.cs</Link>
+    </Compile>
+    <Compile Include="..\Slave\Slave.cs">
+      <Link>Slave\Slave.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Designer\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="License.md" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
