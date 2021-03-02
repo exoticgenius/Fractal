@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>
+      netcoreapp2.1;
+      netcoreapp3.1;
+      net5.0;
+      NET45;
+    </TargetFrameworks>
+    <Authors>farshad sadeghi</Authors>
+    <Company>exotic genius</Company>
+    <Product>Fractal</Product>
+    <Description>serialize a whole data structure to file and simply rebuild it with fractal
+a simple core to store and retrieve data using files</Description>
+    <PackageLicenseFile>License.md</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/exoticgenius/Fractal</RepositoryUrl>
+    <PackageIcon>ego.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Designer\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ego.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="License.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

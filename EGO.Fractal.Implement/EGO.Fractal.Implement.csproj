@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fractal.Core\Fractal.Core.csproj" />
+    <ProjectReference Include="..\EGO.Fractal\EGO.Fractal.csproj" />
   </ItemGroup>
 
 </Project>

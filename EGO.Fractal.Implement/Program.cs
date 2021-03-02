@@ -35,16 +35,6 @@ namespace Implement
 
         public static void Main()
         {
-            var a = Test("D:\\");
-            var cs = a.GetAllChildren();
-            cs.Sort(Tools.Sort<INode>(SortMode.Ascending, x => x.Name));
-            var z = Tools.BinarySearch(cs, x => x.ChildrenCount, 0);
-            
-            Console.ReadLine();
-        }
-
-        private static INode Test(string path)
-        {
             sw1.Start();
             timepicker();
 
@@ -58,7 +48,7 @@ namespace Implement
             HDDMapper h1 = new HDDMapper();
             a1.Slave = h1;
             a1.AddedChildStatic += addedChild;
-            h1.Search(path);
+            h1.Search("D:\\");
             Console.WriteLine("end create node 1 -- " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
             Console.WriteLine("begin collect node 1");
@@ -70,6 +60,7 @@ namespace Implement
 
 
             Console.WriteLine("begin create node 2");
+
             Node a2 = new Node();
             a2.AddedChildStatic += addedChild;
             a2.Emitter(ref a1Collection);
@@ -87,8 +78,9 @@ namespace Implement
             Console.WriteLine("begin create node 3");
 
             Node a3 = new Node();
-            a3.AddedChildStatic += addedChild;
+            a3.AddedChildStatic -= addedChild;
             a3.Emitter(ref a2Collection);
+
             Console.WriteLine("end create node 3 -- " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
             Console.WriteLine("begin collect node 3");
@@ -107,6 +99,9 @@ namespace Implement
             StreamWriter s1 = new StreamWriter("1.txt");
             StreamWriter s2 = new StreamWriter("2.txt");
             StreamWriter s3 = new StreamWriter("3.txt");
+
+
+
 
             offset = sw1.ElapsedMilliseconds;
             a1.Serialize(s1);
@@ -155,12 +150,17 @@ namespace Implement
             l1.Add(a1);
             l2.Add(a2);
             l3.Add(a3);
-
+            List<INode> x = l1.Where(t => t.Features[0] == "%Folder%").ToList();
+            x.Sort(Tools.Sort<INode>(SortMode.Descending, c1 => c1.ChildrenCount, true));
+            int l = (x.Count > 70) ? 70 : x.Count;
+            for (int i = 0; i < 200; i++)
+            {
+                Console.WriteLine(x[i].ChildrenCount.ToString().PadRight(7, ' ') + x[i].GetPath(AttributeTypes.Name, '\\'));
+            }
 
             sw1.Stop();
             Console.WriteLine("ALL IN: " + sw1.ElapsedMilliseconds);
-
-            return a1;
+            Console.ReadLine();
         }
 
         private static void addedChild(INode sender, INode node)
@@ -168,36 +168,45 @@ namespace Implement
             called++;
         }
     }
-
     public class HDDMapper : Node
     {
+        //private INode _Master;
+
+
+        //public event Slave_Master_EventHandler MasterChanged;
+        //public event Slave_SuspendState_EventHandler SuspendStateChanged;
+
+        //public void OnMasterChanged(ISlave sender, INode oldMaster) => MasterChanged?.Invoke(sender, oldMaster);
+        //public void OnSuspendStateChanged(ISlave sender, bool oldState) => SuspendStateChanged?.Invoke(sender, oldState);
 
         public int FileCounter { get; set; }
         public int FolderCounter { get; set; }
+        //public INode Master
+        //{
+        //    get => _Master;
+        //    set
+        //    {
+        //        _Master = value;
+        //        if (_Master != null) validateMaster();
+        //    }
+        //}
+        //public bool SuspendState { get; set; }
+        //public string TypeName { get; set; }
 
         public HDDMapper()
         {
 
             SetTypeName(this.GetType());
         }
-        public HDDMapper(string path)
+        public HDDMapper(string path) : this()
         {
             if (string.IsNullOrWhiteSpace(path)) Search(path);
         }
         public void Search(string path)
         {
             DirectoryInfo d = new DirectoryInfo(path);
-            //CheckAccessResult r = CheckAccess<DirectoryInfo>(d.FullName,
-            //    FileSystemRights.ReadAndExecute | FileSystemRights.Synchronize,
-            //    FileSystemRights.Read,
-            //    FileSystemRights.FullControl,
-            //    FileSystemRights.ListDirectory,
-            //    FileSystemRights.Synchronize,
-            //    FileSystemRights.FullControl,
-            //    FileSystemRights.TakeOwnership);
             Master.Name = d.FullName;
             Master.Features[0] = "%Folder%";
-            //if (r.AccessGranted)
             Search(Master);
         }
         private void validateMaster()
@@ -215,9 +224,6 @@ namespace Implement
             {
                 foreach (FileInfo f in d.GetFiles())
                 {
-                    //var x = CheckAccess<FileInfo>(f.FullName, FileSystemRights.ListDirectory);
-                    //if (x.AccessGranted)
-                    //{
                     try
                     {
                         Node t = new Node(node, string.Empty);
@@ -231,7 +237,6 @@ namespace Implement
                     {
 
                     }
-                    //}
                 }
             }
             catch
@@ -243,10 +248,6 @@ namespace Implement
             {
                 foreach (DirectoryInfo f in d.GetDirectories())
                 {
-                    //var x = CheckAccess<DirectoryInfo>(f.FullName, FileSystemRights.ListDirectory);
-
-                    //if (x.AccessGranted)
-                    //{
                     try
                     {
                         Node t = new Node(node, string.Empty);
@@ -259,7 +260,6 @@ namespace Implement
                     {
 
                     }
-                    //}
                 }
             }
             catch
@@ -268,55 +268,6 @@ namespace Implement
             }
         }
 
-        public static CheckAccessResult CheckAccess<T>(string path, params FileSystemRights[] rights) where T : FileSystemInfo
-        {
-            CheckAccessResult access = new CheckAccessResult(false);
-            try
-            {
-                dynamic dir = Activator.CreateInstance(typeof(T), Path.Combine(path));
-                FileSystemSecurity fs = (FileSystemSecurity)dir.GetAccessControl();
-                var accessRules = fs.GetAccessRules(true, true, typeof(NTAccount));
-                foreach (FileSystemAccessRule accessRule in accessRules)
-                {
-                    if (!access.AccessGranted)
-                    {
-
-                        foreach (var r in rights)
-                            if ((accessRule.FileSystemRights & r) > 0)
-                            {
-                                if (accessRule.AccessControlType == AccessControlType.Allow)
-                                {
-                                    access.AccessGranted = true;
-                                }
-                                if (access.DeniedAccesses.FindAll(x => x.FileSystemRights < accessRule.FileSystemRights).Count > 0) access.AccessGranted = false;
-                            };
-                    }
-
-                    if (accessRule.AccessControlType == AccessControlType.Allow) access.GrantedAccesses.Add(accessRule);
-                    else access.DeniedAccesses.Add(accessRule);
-                }
-
-            }
-            catch
-            {
-                access.AccessGranted = false;
-            }
-            return access;
-        }
-
-        public struct CheckAccessResult
-        {
-            public bool AccessGranted { get; set; }
-            public List<FileSystemAccessRule> DeniedAccesses { get; set; }
-            public List<FileSystemAccessRule> GrantedAccesses { get; set; }
-
-            public CheckAccessResult(bool accessGranted)
-            {
-                AccessGranted = accessGranted;
-                DeniedAccesses = new List<FileSystemAccessRule>();
-                GrantedAccesses = new List<FileSystemAccessRule>();
-            }
-        }
 
     }
 }
