@@ -60,14 +60,13 @@ namespace Fractal
         #endregion
         #region Constants
         public const char ATT_SEPARATOR = '|';
-        public const char OBJ_SEPARATOR = '*';
         public const char START_CHILD = '<';
         public const char END_CHILD = '>';
+        private static readonly char[] AttributeExtractorArray = new char[] { END_CHILD, START_CHILD };
         protected const string EXCEPTION_REMOVER_FIX = "%A1";
         protected const string START_CHILD_FIX = "%A2";
         protected const string END_CHILD_FIX = "%A3";
         protected const string ATT_SEPARATOR_FIX = "%A4";
-        protected const string OBJ_SEPARATOR_FIX = "%A5";
         protected const string _TYPE_NAME = "Fractal.Node,Fractal";
         #endregion
         #region Fields
@@ -206,18 +205,18 @@ namespace Fractal
             {
                 StringBuilder s = new StringBuilder();
 
-                s.Append((TypeName == _TYPE_NAME) ? ((int)childType.Node).ToString() : (!IsRoot && TypeName == Parent.TypeName) ? ((int)childType.SameAsParent).ToString() : EncodeForExport(TypeName));
+                s.Append((TypeName == _TYPE_NAME) ? ((int)childType.Node).ToString() : (!IsRoot && TypeName == Parent.TypeName) ? ((int)childType.SameAsParent).ToString() : Encode(TypeName));
                 s.Append(ATT_SEPARATOR);
-                s.Append(EncodeForExport(SlaveTypeName));
+                s.Append(Encode(SlaveTypeName));
                 s.Append(ATT_SEPARATOR);
                 s.Append(ID.ToString());
                 s.Append(ATT_SEPARATOR);
-                s.Append(EncodeForExport(Name));
+                s.Append(Encode(Name));
 
                 for (int i = 0, j = Features.Count; i < j; i++)
                 {
                     s.Append(ATT_SEPARATOR);
-                    s.Append(EncodeForExport(Features[i]));
+                    s.Append(Encode(Features[i]));
                 }
                 return s.ToString();
             }
@@ -232,20 +231,20 @@ namespace Fractal
 
                 if (t.Count > 0)
                 {
-                    string tn = DecodeForImport(t.Dequeue());
+                    string tn = Decode(t.Dequeue());
                     if (tn == ((int)childType.Node).ToString()) tn = _TYPE_NAME;
                     else if (!IsRoot && tn == ((int)childType.SameAsParent).ToString()) tn = Parent.TypeName;
                     TypeName = tn;
                 }
                 if (t.Count > 0)
-                    SlaveTypeName = DecodeForImport(t.Dequeue());
+                    SlaveTypeName = Decode(t.Dequeue());
                 if (t.Count > 0)
                     ID = int.Parse(t.Dequeue());
                 if (t.Count > 0)
-                    Name = DecodeForImport(t.Dequeue());
+                    Name = Decode(t.Dequeue());
                 for (int i = 0; i < Features.Count && t.Count > 0; i++)
-                    Features[i] = DecodeForImport(t.Dequeue());
-                while (t.Count > 0) Features.Add(DecodeForImport(t.Dequeue()));
+                    Features[i] = Decode(t.Dequeue());
+                while (t.Count > 0) Features.Add(Decode(t.Dequeue()));
             }
         }
         public virtual int LayerCounter
@@ -296,7 +295,9 @@ namespace Fractal
             parent?.AddChild(this);
             if (data != string.Empty)
             {
-                Emitter(ref data);
+                int l = 0;
+                string atts = null;
+                Emitter(ref data, ref l, ref atts);
             }
         }
         public Node(string name, params string[] attributes)
@@ -307,7 +308,13 @@ namespace Fractal
 
         #endregion
         #region WorkMethods
-        public void Emitter(ref string data, int start = 0, int length = 0)
+        public void Emitter(ref string data)
+        {
+            int start = 0;
+            string atts = null;
+            Emitter(ref data, ref start, ref atts);
+        }
+        public void Emitter(ref string data, ref int i, ref string attributes)
         {
             if (!SuspendState)
             {
@@ -315,35 +322,26 @@ namespace Fractal
                 Root.OnRootEmitBegin(this);
             }
             if (string.IsNullOrWhiteSpace(data)) return;
-            Attributes = GetAttributes(ref data, start);
+            if (attributes == null)
+                Attributes = GetAttributes(ref data, ref i);
+            else
+                Attributes = attributes;
             RemoveChild(x => true);
-            bool inChild = false;
-            int braceCounter = 0;
-            int startChild = 0;
-            int lengthChild = 0;
-            for (int i = start + 1; i < (length == 0 ? data.Length - 1 : length + start); i++)
+            for (int l = data.Length - 1; i < l; i++)
             {
                 if (data[i] == START_CHILD)
                 {
-                    if (!inChild) startChild = i;
-                    inChild = true;
-                    braceCounter++;
+                    string atts = GetAttributes(ref data, ref i);
+                    int index = atts.IndexOf(ATT_SEPARATOR);
+                    if (index == -1) continue;
+                    INode t = CreateChild(atts.Substring(0, index), this);
+
+                    AddChild(t);
+                    t.Emitter(ref data, ref i, ref atts);
                 }
                 else if (data[i] == END_CHILD)
                 {
-                    if (inChild)
-                        braceCounter--;
-                }
-
-                if (inChild) lengthChild++;
-
-                if (inChild && braceCounter == 0)
-                {
-                    inChild = false;
-                    INode t = CreateChild(GetAttributes(ref data, startChild).Split(new char[] { ATT_SEPARATOR })[0], this);
-                    AddChild(t);
-                    t.Emitter(ref data, startChild, lengthChild);
-                    startChild = lengthChild = 0;
+                    break;
                 }
             }
             if (!SuspendState)
@@ -359,13 +357,13 @@ namespace Fractal
                 CollectBegin?.Invoke(this);
                 Root.OnRootCollectBegin(this);
             }
+
             StringBuilder Collected = new StringBuilder();
             Collected.Append($"{START_CHILD}{Attributes}");
 
             var cs = this.PullChildren();
             for (int i = 0, j = cs.Count; i < j; i++)
             {
-                Collected.Append(OBJ_SEPARATOR);
                 cs[i].Collector(Collected, false);
             }
 
@@ -386,7 +384,6 @@ namespace Fractal
             var cs = this.PullChildren();
             for (int i = 0, j = cs.Count; i < j; i++)
             {
-                sb.Append(OBJ_SEPARATOR);
                 cs[i].Collector(sb, false);
             }
             sb.Append(END_CHILD);
@@ -406,7 +403,6 @@ namespace Fractal
             var cs = this.PullChildren();
             for (int i = 0, j = cs.Count; i < j; i++)
             {
-                sw.Write(OBJ_SEPARATOR);
                 cs[i].Collector(sw, false);
             }
             sw.Write(END_CHILD);
@@ -551,7 +547,7 @@ namespace Fractal
         }
         #endregion
         #region Static Members
-        public static string EncodeForExport(string str)
+        public static string Encode(string str)
         {
             StringBuilder sb = new StringBuilder(str);
 
@@ -560,10 +556,9 @@ namespace Fractal
             sb.Replace(Node.START_CHILD.ToString(), START_CHILD_FIX);
             sb.Replace(Node.END_CHILD.ToString(), END_CHILD_FIX);
             sb.Replace(Node.ATT_SEPARATOR.ToString(), ATT_SEPARATOR_FIX);
-            sb.Replace(Node.OBJ_SEPARATOR.ToString(), OBJ_SEPARATOR_FIX);
             return sb.ToString();
         }
-        public static string DecodeForImport(string str)
+        public static string Decode(string str)
         {
             StringBuilder sb = new StringBuilder(str);
 
@@ -571,16 +566,20 @@ namespace Fractal
             sb.Replace(START_CHILD_FIX, Node.START_CHILD.ToString());
             sb.Replace(END_CHILD_FIX, Node.END_CHILD.ToString());
             sb.Replace(ATT_SEPARATOR_FIX, Node.ATT_SEPARATOR.ToString());
-            sb.Replace(OBJ_SEPARATOR_FIX, Node.OBJ_SEPARATOR.ToString());
 
             sb.Replace(EXCEPTION_REMOVER_FIX, "%");
 
             return sb.ToString();
         }
-        public static string GetAttributes(ref string data, int start)
+        private static string GetAttributes(ref string data, ref int i)
         {
-            if (data == string.Empty || data.Length <= start) return string.Empty;
-            return data.Substring(start + 1, data.IndexOfAny(new char[] { OBJ_SEPARATOR, END_CHILD, START_CHILD }, start + 1) - start - 1);
+            string rd = string.Empty;
+            if (string.IsNullOrEmpty(data) || data.Length <= i) return rd;
+            int index = data.IndexOfAny(AttributeExtractorArray, i + 1);
+            if (index == -1) return rd;
+            rd = data.Substring(i + 1, index - i - 1);
+            i = index;
+            return rd;
         }
         public static ISlave CreateSlave(ref string typeName, INode master)
         {

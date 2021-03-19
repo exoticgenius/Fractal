@@ -99,7 +99,8 @@ namespace Fractal
         INode this[Type type] { get; }
         #endregion
         #region WorkMethods
-        void Emitter(ref string data, int start = -1, int length = 0);
+        void Emitter(ref string data);
+        void Emitter(ref string data,ref int i,ref string attributes);
         string Collector(bool Starter = false);
         StringBuilder Collector(StringBuilder sb, bool Starter = true);
         void Collector(StreamWriter sw, bool Starter = true);

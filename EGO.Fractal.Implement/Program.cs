@@ -104,13 +104,13 @@ namespace Implement
 
 
             offset = sw1.ElapsedMilliseconds;
-            a1.Serialize(s1);
+            a1.Collector(s1);
             Console.WriteLine("serialized in: " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
-            a2.Serialize(s2);
+            a2.Collector(s2);
             Console.WriteLine("serialized in: " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
-            a3.Serialize(s3);
+            a3.Collector(s3);
             Console.WriteLine("serialized in: " + (sw1.ElapsedMilliseconds - offset));
 
             s1.Close();
@@ -150,13 +150,13 @@ namespace Implement
             l1.Add(a1);
             l2.Add(a2);
             l3.Add(a3);
-            List<INode> x = l1.Where(t => t.Features[0] == "%Folder%").ToList();
-            x.Sort(Tools.Sort<INode>(SortMode.Descending, c1 => c1.ChildrenCount, true));
-            int l = (x.Count > 70) ? 70 : x.Count;
-            for (int i = 0; i < 200; i++)
-            {
-                Console.WriteLine(x[i].ChildrenCount.ToString().PadRight(7, ' ') + x[i].GetPath(AttributeTypes.Name, '\\'));
-            }
+            //List<INode> x = l1.Where(t => t.Features[0] == "%Folder%").ToList();
+            //x.Sort(Tools.Sort<INode>(SortMode.Descending, c1 => c1.ChildrenCount, true));
+            //int l = (x.Count > 70) ? 70 : x.Count;
+            //for (int i = 0; i < 200; i++)
+            //{
+            //    Console.WriteLine(x[i].ChildrenCount.ToString().PadRight(7, ' ') + x[i].GetPath(AttributeTypes.Name, '\\'));
+            //}
 
             sw1.Stop();
             Console.WriteLine("ALL IN: " + sw1.ElapsedMilliseconds);

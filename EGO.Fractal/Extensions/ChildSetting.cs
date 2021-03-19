@@ -11,17 +11,17 @@ namespace Fractal.Extensions
         public static bool AddChild(this INode parent, string data)
         {
             INode node =new Node();
-            node.Emitter(ref data);
             parent.AddChild(node);
+            node.Emitter(ref data);
 
             return true;
         }
         public static bool AddChild<T>(this INode parent, string name, params string[] attributes) where T : INode
         {
             INode node = (INode)Activator.CreateInstance(typeof(T));
+            parent.AddChild(node);
             node.Name = name;
             node.Features.AddRange(attributes);
-            parent.AddChild(node);
 
             return true;
         }
