@@ -89,7 +89,6 @@ namespace Fractal
         bool IsRoot { get; }
         int AllChildrenCount { get; }
         int ChildrenCount { get; }
-        string Attributes { get; set; }
         int LayerCounter { get; }
         int TopUsedID { get; set; }
         bool SuspendState { get; set; }
@@ -100,12 +99,12 @@ namespace Fractal
         #endregion
         #region WorkMethods
         void Emitter(ref string data);
-        void Emitter(ref string data,ref int i,ref string attributes);
+        void Emitter(ref string data,ref int i,Queue<string> attributes);
         string Collector(bool Starter = false);
         StringBuilder Collector(StringBuilder sb, bool Starter = true);
         void Collector(StreamWriter sw, bool Starter = true);
         int GetTopFreeId(int id = 0);
-        void FeaturesAllign();
+        void FeaturesAllign(int count);
         List<INode> GetAllChildren();
         List<INode> PullChildren();
         List<T> PullChildren<T>() where T : INode;
