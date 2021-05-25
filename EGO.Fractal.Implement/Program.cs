@@ -13,6 +13,7 @@ using Fractal;
 using Fractal.Extensions;
 using System.Collections;
 using System.Reflection;
+using System.Runtime;
 
 namespace Implement
 {
@@ -22,24 +23,23 @@ namespace Implement
         static int called = 0;
         static async void timepicker()
         {
-            await Task.Factory.StartNew(() =>
+            while (true)
             {
-                while (true)
-                {
 
-                    Console.Title = called.ToString(); //sw1.ElapsedMilliseconds.ToString();
-                    Thread.Sleep(20);
-                }
-            });
+                Console.Title = called.ToString(); //sw1.ElapsedMilliseconds.ToString();
+                await Task.Delay(50);
+            }
         }
 
         public static void Main()
         {
+            Red(GC.MaxGeneration.ToString());
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GCSettings.LatencyMode = GCLatencyMode.Interactive;
             sw1.Start();
             timepicker();
 
             long offset = 1;
-
             Console.WriteLine("begin create node 1");
 
             Node a1 = new Node((INode)null);
@@ -49,6 +49,7 @@ namespace Implement
             a1.Slave = h1;
             a1.AddedChildStatic += addedChild;
             h1.Search("D:\\");
+            GCP();
             Console.WriteLine("end create node 1 -- " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
             Console.WriteLine("begin collect node 1");
@@ -64,6 +65,8 @@ namespace Implement
             Node a2 = new Node();
             a2.AddedChildStatic += addedChild;
             a2.Emitter(ref a1Collection);
+            a1Collection = null;
+            GCP();
             Console.WriteLine("end create node 2 -- " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
             Console.WriteLine("begin collect node 2");
@@ -80,7 +83,8 @@ namespace Implement
             Node a3 = new Node();
             a3.AddedChildStatic -= addedChild;
             a3.Emitter(ref a2Collection);
-
+            a2Collection = null;
+            GCP();
             Console.WriteLine("end create node 3 -- " + (sw1.ElapsedMilliseconds - offset));
             offset = sw1.ElapsedMilliseconds;
             Console.WriteLine("begin collect node 3");
@@ -150,6 +154,7 @@ namespace Implement
             l1.Add(a1);
             l2.Add(a2);
             l3.Add(a3);
+            GCP();
             //List<INode> x = l1.Where(t => t.Features[0] == "%Folder%").ToList();
             //x.Sort(Tools.Sort<INode>(SortMode.Descending, c1 => c1.ChildrenCount, true));
             //int l = (x.Count > 70) ? 70 : x.Count;
@@ -163,6 +168,21 @@ namespace Implement
             Console.ReadLine();
         }
 
+        private static void GCP()
+        {
+            Red(GC.GetTotalMemory(false).ToString());
+            GC.Collect(0, GCCollectionMode.Forced);
+            GC.Collect(1, GCCollectionMode.Forced);
+            GC.Collect(2, GCCollectionMode.Forced);
+            Red(GC.GetTotalMemory(false).ToString());
+        }
+
+        public static void Red (string text)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(text);
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
         private static void addedChild(INode sender, INode node)
         {
             called++;

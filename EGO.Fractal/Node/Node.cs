@@ -593,8 +593,9 @@ namespace Fractal
             if (string.IsNullOrEmpty(data) || data.Length <= i) return new Queue<string>();
             int index = data.IndexOfAny(AttributeExtractorArray, i + 1);
             if (index == -1) return new Queue<string>();
+            var atts = new Queue<string>(( data.Substring(i + 1, index - i - 1).Split(ATT_SEPARATOR)));
             i = index;
-            return new Queue<string>(( data.Substring(i + 1, index - i - 1).Split(ATT_SEPARATOR)));
+            return atts;
         }
         private static ISlave CreateSlave(ref string typeName, INode master)
         {

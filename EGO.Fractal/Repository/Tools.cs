@@ -116,7 +116,7 @@ namespace Fractal
                 return func((INode)((object)a), (INode)((object)b));
             }
         }
-        public static IComparer<INode> Sort(SortMode sortMode, AttributeTypes type, bool isInteger = false, int featureindex = -1)
+        public static IComparer<INode> NodeComparer(SortMode sortMode, AttributeTypes type, bool isInteger = false, int featureindex = -1)
         {
             if (sortMode == SortMode.Ascending)
                 switch (type)
@@ -166,7 +166,7 @@ namespace Fractal
                 else return 0;
             }
         }
-        public static IComparer<INode> Sort<T>(SortMode sortMode, Expression<Func<T, object>> expression, bool isInteger = false) where T : INode
+        public static IComparer<INode> NodeComparer<T>(SortMode sortMode, Expression<Func<T, object>> expression, bool isInteger = false) where T : INode
         {
             if (sortMode == SortMode.Ascending)
                 return (isInteger) ? new Compare((x, y) => Comp(x, y)) : new Compare((x, y) => Tools.GetResult(expression, x).ToString().CompareTo(Tools.GetResult(expression, y).ToString()));
